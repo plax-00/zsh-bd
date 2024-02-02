@@ -20,6 +20,7 @@ bd () {
   parents=($parents "/")
   # Build dest and 'cd' to it
   local parent
+  1=`basename $1`
   foreach parent (${parents})
   do
     dest+="../"
@@ -55,10 +56,17 @@ _bd () {
   # Get parents (in reverse order)
   local num_folders_we_are_in=${#${(ps:/:)${PWD}}}
   local i
+  local -a parents
   for i in {$num_folders_we_are_in..2}
   do
-    reply=($reply "`echo $PWD | cut -d'/' -f$i`")
+    parents+="`echo $PWD | cut -d'/' -f$i`/"
   done
-  reply=($reply "/")
+  parents+="/"
+  _wanted directories expl 'parent directories' compadd -o nosort -a parents
 }
-compctl -V directories -K _bd bd
+compdef -a _bd bd
+
+local color_codes
+zstyle -s ':completion:*' list-colors color_codes
+local dir_color=`echo "${color_codes}" | grep -o "\sdi=[0-9;]*\s" | xargs | cut -d "=" -f 2`
+zstyle ':completion:*:complete:bd:*:directories' list-colors "=(#b)*(/)=${dir_color}="
